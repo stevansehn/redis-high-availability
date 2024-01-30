@@ -1,0 +1,20 @@
+# Use the official Sentinel image as the base image
+FROM redis
+
+# Update the package list and install sysctl
+RUN apt-get update && apt-get install -y procps && apt-get install -y supervisor
+
+# Set vm.overcommit_memory to 1 in sysctl.conf
+RUN echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+
+# Set the working directory
+WORKDIR /usr/local/etc/redis
+
+# Copy the Sentinel configuration file for master
+COPY redis-sentinel-2/sentinel.conf /usr/local/etc/redis/sentinel.conf
+
+# Copy supervisord configuration file
+COPY redis-sentinel-2/supervisord-redis.conf /etc/supervisor/conf.d/supervisord-redis.conf
+
+# Command to run supervisord
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-u", "root"]

@@ -1,0 +1,20 @@
+# Use the official Redis image as the base image
+FROM redis
+
+# Update the package list and install sysctl
+RUN apt-get update && apt-get install -y procps && apt-get install -y supervisor
+
+# Set vm.overcommit_memory to 1 in sysctl.conf
+RUN echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+
+# Set the working directory
+WORKDIR /usr/local/etc/redis
+
+# Copy the Redis configuration file for replica
+COPY redis-replica-1/redis.conf /usr/local/etc/redis/redis.conf
+
+# Copy supervisord configuration file
+COPY redis-replica-1/supervisord-redis.conf /etc/supervisor/conf.d/supervisord-redis.conf
+
+# Command to run supervisord
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-u", "root"]
